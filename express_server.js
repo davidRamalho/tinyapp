@@ -27,34 +27,48 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//HOMEPAGE
+app.get('/', (req, res) => {
+  res.send('Hello!');
+});
+
+//URLS TABLE
 app.get('/urls', (req, res) => {
   let templateVars = { urls: urlDatabase }; 
   res.render('urls_index', templateVars);
 })
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
-app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-  res.render("urls_show", templateVars);
-});
-
-app.get('/', (req, res) => {
-  res.send('Hello!');
-});
-
+//JSON OBJECT
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
+//NEW URL CREATION PAGE
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+//GENERATE NEW SHORTURL / REDIRECT TO SHORT URL PAGE
 app.post("/urls", (req, res) => {
   const randomShortURL = generateRandomString();
   urlDatabase[randomShortURL] = req.body.longURL;
   res.redirect(`/urls/${randomShortURL}`);
 });
 
+// DELETE
+app.post('/urls/:shortURL/delete', (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL]; 
+  res.redirect('/urls');
+})
+
+//SHORT URL PAGE
+app.get("/urls/:shortURL", (req, res) => {
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  res.render("urls_show", templateVars);
+});
+
+//REDIRECT PATH
 app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
