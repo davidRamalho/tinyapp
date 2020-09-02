@@ -3,7 +3,7 @@
 <head>
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <title>URL - TinyApp Example</title>
+  <title>TinyApp - URL Link</title>
 </head>
 
 <body>
@@ -23,12 +23,14 @@
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
-      <h4 class="card-title">Edit</h4>
+      <h3 class="card-title">Edit</h3>
+      <h6>Enter a change to your  LongURL below, to re-use your ShortURL link.</h6>
       <form method="POST" action="/urls/<%= shortURL %>">
       <label>New URL: </label>
       <input
         type="text"
         name="newURL"
+        placeholder="http://"
       />
       <button type="submit">Submit</button>
       </form> 

@@ -55,6 +55,14 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+//REGISTRATION PAGE
+app.get("/urls/register", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_register", templateVars);
+});
+
 //GENERATE NEW SHORTURL / REDIRECT TO SHORT URL PAGE
 app.post("/urls", (req, res) => {
   const randomShortURL = generateRandomString();
