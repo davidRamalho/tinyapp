@@ -2,8 +2,9 @@ const express = require('express');
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
-
+app.use(cookieParser());
 app.set('view engine', 'ejs');
 
 function generateRandomString() {
@@ -13,9 +14,9 @@ function generateRandomString() {
 
   let output = '';
   for (let i = 0; i < 6; i++) {
-    output += char[Math.round(Math.random()*61)]
+    output += char[Math.round(Math.random()*61)];
   };
-  return output
+  return output;
 };
 
 app.listen(PORT, () => {
@@ -34,7 +35,10 @@ app.get('/', (req, res) => {
 
 //URLS TABLE
 app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlDatabase }; 
+  let templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
   res.render('urls_index', templateVars);
 })
 
@@ -45,7 +49,10 @@ app.get('/urls.json', (req, res) => {
 
 //NEW URL CREATION PAGE
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_new", templateVars);
 });
 
 //GENERATE NEW SHORTURL / REDIRECT TO SHORT URL PAGE
@@ -69,9 +76,25 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls');
 });
 
+//Setting Cookie & Login Functionality
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
+
+//Logout Functionality
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
+
 //SHORT URL PAGE
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  let templateVars = { 
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL], 
+    username: req.cookies["username"]
+  };
   res.render("urls_show", templateVars);
 });
 
