@@ -19,10 +19,31 @@ function generateRandomString() {
   return output;
 };
 
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+// USERS DATABASE
+const users = {
+  zPOKQU: { id: 'zPOKQU',
+    email: 'a@a.com',
+    password: '1241245' },
+}
+
+//Check for E-mail Function Based on User Input
+const checkForEmail = (input) => {
+  for (const userID in users) {
+    if (users[userID].email === input) {
+      return input;
+    }
+  }
+  return false;
+}
+
+console.log(checkForEmail('a@a.com'))
+
+//URL DATABASE
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -35,8 +56,8 @@ app.get('/', (req, res) => {
 
 //URLS TABLE
 app.get('/urls', (req, res) => {
-  let templateVars = {
-    username: req.cookies["username"],
+  const templateVars = {
+    username: users[req.cookies['User_ID']],
     urls: urlDatabase
   };
   res.render('urls_index', templateVars);
@@ -50,7 +71,7 @@ app.get('/urls.json', (req, res) => {
 //NEW URL CREATION PAGE
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    username: users[req.cookies['User_ID']],
   };
   res.render("urls_new", templateVars);
 });
@@ -58,9 +79,35 @@ app.get("/urls/new", (req, res) => {
 //REGISTRATION PAGE
 app.get("/urls/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    username: users[req.cookies['User_ID']], 
   };
   res.render("urls_register", templateVars);
+});
+
+//LOGIN PAGE
+app.get("/urls/login", (req, res) => {
+  let templateVars = {
+    username: users[req.cookies['User_ID']], 
+  };
+  res.render("urls_login", templateVars);
+});
+
+//REGISTRATION HANDLER
+app.post('/urls/register', (req, res) => {
+  const userID = generateRandomString();
+  if (!req.body.email || !req.body.password) {
+    return res.status(400).send('No Blanks Please!');
+  } else if (checkForEmail(req.body.email) === false){
+    users[userID] = {
+      id: userID, 
+      email: req.body.email, 
+      password: req.body.password
+    }
+    res.cookie('User_ID', userID);
+    res.redirect('/urls/login');
+  } else {
+    return res.status(400).send('e-mail already in use!');
+  }
 });
 
 //GENERATE NEW SHORTURL / REDIRECT TO SHORT URL PAGE
@@ -92,7 +139,7 @@ app.post('/login', (req, res) => {
 
 //Logout Functionality
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('User_ID');
   res.redirect('/urls');
 });
 
@@ -101,7 +148,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { 
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL], 
-    username: req.cookies["username"]
+    username: users[req.cookies['User_ID']],
   };
   res.render("urls_show", templateVars);
 });
