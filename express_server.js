@@ -31,17 +31,25 @@ const users = {
     password: '1241245' },
 }
 
-//Check for E-mail Function Based on User Input
+//Check for E-mail & Password Functions
+//*****************************************/
 const checkForEmail = (input) => {
   for (const userID in users) {
     if (users[userID].email === input) {
-      return input;
+      return users[userID];
     }
   }
   return false;
 }
-
-console.log(checkForEmail('a@a.com'))
+// const checkForPassword = (input) => {
+//   for (const userID in users) {
+//     if (users[userID].password === input) {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
+//*****************************************/
 
 //URL DATABASE
 const urlDatabase = {
@@ -107,6 +115,25 @@ app.post('/urls/register', (req, res) => {
     res.redirect('/urls/login');
   } else {
     return res.status(400).send('e-mail already in use!');
+  }
+});
+
+//LOGIN HANDLER
+app.post('/urls/login', (req, res) => {
+  if (!req.body.email || !req.body.password) {
+    return res.status(400).send('No Blanks Please!');
+  } 
+  let user = ''
+  if (checkForEmail(req.body.email)) {
+    user = checkForEmail(req.body.email);
+    if (req.body.password === user.password) {
+      res.cookie('User_ID', user.id);
+      res.redirect('/urls');
+    } else {
+      return res.status(403).send('Is your name Balrog? Gandalf Stopped You! \n (Login Info Incorrect!)');
+    }
+  } else {
+    return res.status(403).send('Is your name Balrog? Gandalf Stopped You! \n (Login Info Incorrect!)');
   }
 });
 
