@@ -24,16 +24,23 @@
         </tr>
       </thead>
       <tbody>
+        <% if(usernameID === undefined) { %>
+          <h5>If You Want to Create ShortURLs Please Register &/or Log In:</h5> 
+          <p style="text-align:center;"><img src= "https://massivelyop.com/wp-content/uploads/2017/10/Just-do-it-You-know-you-want-to-meme-63118_473239_1.jpg" alt="Logo"></p>
+        <% } else { %>
         <% for(let url in urls) { %>
+          <% if(usernameID === urls[url].userID) { %>
           <tr>
             <td><%= url %></td>
-            <td><%= urls[url] %></td>
+            <td><%= urls[url].longURL %></td>
             <td><a href="/urls/<%= url %>"><button>Edit</button></a></td>
             <td>
               <form method="POST" action="/urls/<%= url %>/delete">
               <button>Delete</button></form>
             </td>
           </tr>
+          <% } %>
+          <% } %>
         <% } %>
       </tbody>
     </table>
