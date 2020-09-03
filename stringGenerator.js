@@ -9,5 +9,7 @@ function generateRandomString() {
   };
   return output;
 };
-
+const bcrypt = require('bcrypt');
 module.exports = generateRandomString;
+
+console.log(bcrypt.hashSync('123', 10))

@@ -4,6 +4,7 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const generateRandomString = require('./stringGenerator')
+const bcrypt = require('bcrypt');
 
 //MIDDLEWARE
 app.use(bodyParser.urlencoded({extended: true}));
@@ -17,24 +18,20 @@ app.listen(PORT, () => {
 
 // USERS DATABASE
 const users = {
+  //Users for Testing Purposes
   aJ48lW: { id: "aJ48lW",
-    email: 'a@a',
-    password: '123' },
+            email: 'a@a',
+            password: bcrypt.hashSync('123', 10) },
   
   bJ48lW: { id: "bJ48lW",
-    email: 'a@b',
-    password: '123' },
+            email: 'a@b',
+            password: bcrypt.hashSync('123', 10) },
   
 }
-/*OLD URL DATABASE FORMAT 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-*/
 
 //URL DATABASE
 const urlDatabase = {
+  //URLs for Testing Purposes
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "bJ48lW" }
 };
@@ -116,11 +113,11 @@ app.post('/urls/register', (req, res) => {
     users[userID] = {
       id: userID, 
       email: req.body.email, 
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 10)
     }
     res.redirect('/urls/login');
   } else {
-    return res.status(400).send('e-mail already in use!');
+    return res.status(400).send('Yoda: In use that E-mail already is!');
   }
 });
 
@@ -132,7 +129,7 @@ app.post('/urls/login', (req, res) => {
   let user = ''
   if (checkForEmail(req.body.email)) {
     user = checkForEmail(req.body.email);
-    if (req.body.password === user.password) {
+    if (bcrypt.compareSync(req.body.password, user.password)) {
       res.cookie('User_ID', user.id);
       res.redirect('/urls');
     } else {
