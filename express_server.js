@@ -5,10 +5,15 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const generateRandomString = require('./stringGenerator')
 const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session')
 
 //MIDDLEWARE
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key']
+}));
 app.set('view engine', 'ejs');
 
 
@@ -65,8 +70,8 @@ app.get('/', (req, res) => {
 //URLS TABLE
 app.get('/urls', (req, res) => {
   const templateVars = {
-    username: users[req.cookies['User_ID']],
-    usernameID: req.cookies['User_ID'], 
+    username: users[req.session['user_id']],
+    usernameID: req.session['user_id'], 
     urls: urlDatabase
   };
   res.render('urls_index', templateVars);
@@ -79,11 +84,11 @@ app.get('/urls.json', (req, res) => {
 
 //NEW URL CREATION PAGE
 app.get("/urls/new", (req, res) => {
-  if (req.cookies.User_ID === undefined) {
+  if (req.session.user_id === undefined) {
     return res.redirect('/urls/login')
   }
   let templateVars = {
-    username: users[req.cookies['User_ID']],
+    username: users[req.session['user_id']],
   };
   res.render("urls_new", templateVars);
 });
@@ -91,7 +96,7 @@ app.get("/urls/new", (req, res) => {
 //REGISTRATION PAGE
 app.get("/urls/register", (req, res) => {
   let templateVars = {
-    username: users[req.cookies['User_ID']], 
+    username: users[req.session['user_id']], 
   };
   res.render("urls_register", templateVars);
 });
@@ -99,7 +104,7 @@ app.get("/urls/register", (req, res) => {
 //LOGIN PAGE
 app.get("/urls/login", (req, res) => {
   let templateVars = {
-    username: users[req.cookies['User_ID']], 
+    username: users[req.session['user_id']], 
   };
   res.render("urls_login", templateVars);
 });
@@ -130,7 +135,7 @@ app.post('/urls/login', (req, res) => {
   if (checkForEmail(req.body.email)) {
     user = checkForEmail(req.body.email);
     if (bcrypt.compareSync(req.body.password, user.password)) {
-      res.cookie('User_ID', user.id);
+      req.session.user_id = user.id;
       res.redirect('/urls');
     } else {
       return res.status(403).send('Is your name Balrog? Gandalf Stopped You! (Login Info Incorrect!)');
@@ -142,21 +147,21 @@ app.post('/urls/login', (req, res) => {
 
 //GENERATE NEW SHORTURL / REDIRECT TO SHORT URL PAGE
 app.post("/urls/", (req, res) => {
-  if (req.cookies.User_ID === undefined) {
+  if (req.session.user_id === undefined) {
     return res.redirect('/urls/login')
   }
   const randomShortURL = generateRandomString();
-  urlDatabase[randomShortURL] = {longURL:'', userID: req.cookies.User_ID}
+  urlDatabase[randomShortURL] = {longURL:'', userID: req.session.user_id}
   urlDatabase[randomShortURL].longURL = req.body.longURL;
   res.redirect(`/urls/${randomShortURL}`);
 });
 
 // DELETE
 app.post('/urls/:shortURL/delete', (req, res) => {
-  if (req.cookies.User_ID === undefined) {
+  if (req.session.user_id === undefined) {
     return res.redirect('/urls/login');
   } else {
-    let userUrls = urlsForUser(req.cookies.User_ID);
+    let userUrls = urlsForUser(req.session.user_id);
     for (url of userUrls) {
       if (url === req.params.shortURL) {
         const shortURL = req.params.shortURL;
@@ -170,10 +175,10 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 //Edit form Submission/Redirect
 app.post('/urls/:shortURL', (req, res) => {
-  if (req.cookies.User_ID === undefined) {
+  if (req.session.user_id === undefined) {
     return res.redirect('/urls/login');
   } else {
-    let userUrls = urlsForUser(req.cookies.User_ID);
+    let userUrls = urlsForUser(req.session.user_id);
     for (url of userUrls) {
       if (url === req.params.shortURL) {
         const shortURL = req.params.shortURL;
@@ -187,22 +192,22 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //Logout Functionality
 app.post('/logout', (req, res) => {
-  res.clearCookie('User_ID');
+  req.session = null;
   res.redirect('/urls');
 });
 
 //SHORT URL PAGE
 app.get("/urls/:shortURL", (req, res) => {
-  if (req.cookies.User_ID === undefined) {
+  if (req.session.user_id === undefined) {
     return res.redirect('/urls/login');
   } else {
-    let userUrls = urlsForUser(req.cookies.User_ID);
+    let userUrls = urlsForUser(req.session.user_id);
     for (url of userUrls) {
       if (url === req.params.shortURL) {
         let templateVars = { 
           shortURL: req.params.shortURL, 
           longURL: urlDatabase[req.params.shortURL], 
-          username: users[req.cookies['User_ID']],
+          username: users[req.session['user_id']],
         };
         return res.render("urls_show", templateVars);
       }
