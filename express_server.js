@@ -21,23 +21,18 @@ app.listen(PORT, () => {
 });
 
 // USERS DATABASE
-const users = {
-  //Users for Testing Purposes
-  aJ48lW: { id: "aJ48lW", email: "a@a", password: bcrypt.hashSync("123", 10) },
-
-  bJ48lW: { id: "bJ48lW", email: "a@b", password: bcrypt.hashSync("123", 10) },
-};
+const users = {};
 
 //URL DATABASE
-const urlDatabase = {
-  //URLs for Testing Purposes
-  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "bJ48lW" },
-};
+const urlDatabase = {};
 
 //HOMEPAGE
 app.get("/", (req, res) => {
-  res.send("Hello! You found my Home! Are you a stalker? ... I am scared ...");
+  if (req.session.user_id === undefined) {
+    return res.redirect("/urls/login");
+  } else {
+    return res.redirect("/urls");
+  }
 });
 
 //URLS TABLE
@@ -87,7 +82,7 @@ app.post("/urls/register", (req, res) => {
   const userID = generateRandomString();
   if (!req.body.email || !req.body.password) {
     return res.status(400).send("No Blanks Please!");
-  } 
+  }
   const user = checkForEmail(req.body.email, users);
   if (user === undefined) {
     users[userID] = {
@@ -138,13 +133,13 @@ app.post("/urls/", (req, res) => {
   res.redirect(`/urls/${randomShortURL}`);
 });
 
-// DELETE
+// DELETE Urls Functionality
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (req.session.user_id === undefined) {
     return res.redirect("/urls/login");
   } else {
     let userUrls = urlsForUser(req.session.user_id, urlDatabase);
-    for (url of userUrls) {
+    for (const url of userUrls) {
       if (url === req.params.shortURL) {
         const shortURL = req.params.shortURL;
         delete urlDatabase[shortURL];
@@ -161,7 +156,7 @@ app.post("/urls/:shortURL", (req, res) => {
     return res.redirect("/urls/login");
   } else {
     let userUrls = urlsForUser(req.session.user_id, urlDatabase);
-    for (url of userUrls) {
+    for (const url of userUrls) {
       if (url === req.params.shortURL) {
         const shortURL = req.params.shortURL;
         urlDatabase[shortURL].longURL = req.body.newURL;
@@ -184,7 +179,7 @@ app.get("/urls/:shortURL", (req, res) => {
     return res.redirect("/urls/login");
   } else {
     let userUrls = urlsForUser(req.session.user_id, urlDatabase);
-    for (url of userUrls) {
+    for (const url of userUrls) {
       if (url === req.params.shortURL) {
         let templateVars = {
           shortURL: req.params.shortURL,
