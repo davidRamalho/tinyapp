@@ -6,8 +6,8 @@ Last, but not least, it contains memes and funny error messages!
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["Screenshot of the Home Page"](https://github.com/davidRamalho/tinyapp/blob/master/docs/TinyApp%20Home%20Page.jpeg?raw=true)
+!["Screenshot of the Registration Page"](https://github.com/davidRamalho/tinyapp/blob/master/docs/TinyAppRegistration.jpeg?raw=true)
 
 ## Dependencies
 
